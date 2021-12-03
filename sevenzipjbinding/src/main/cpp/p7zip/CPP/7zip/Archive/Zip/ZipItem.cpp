@@ -202,7 +202,47 @@ bool CItem::GetPosixAttrib(UInt32 &attrib) const
     attrib = MY_LIN_S_IFDIR;
   return false;
 }
+bool CItem::IsUnicodeString(const AString &s, bool isComment, bool useSpecifiedCodePage, UINT codePage) const
+{
+  bool isUtf8 = IsUtf8();
 
+  if (!isUtf8)
+  {
+    {
+      const unsigned id = isComment ?
+                          NFileHeader::NExtraID::kIzUnicodeComment:
+                          NFileHeader::NExtraID::kIzUnicodeName;
+      const CObjectVector<CExtraSubBlock> &subBlocks = GetMainExtra().SubBlocks;
+
+      FOR_VECTOR (i, subBlocks)
+      {
+        const CExtraSubBlock &sb = subBlocks[i];
+        if (sb.ID == id)
+        {
+          AString utf;
+          if (sb.ExtractIzUnicode(CrcCalc(s, s.Len()), utf)){
+            isUtf8= true;
+          }
+          break;
+        }
+      }
+    }
+
+    if (useSpecifiedCodePage)
+      isUtf8 = (codePage == CP_UTF8);
+    #ifdef _WIN32
+    else if (GetHostOS() == NFileHeader::NHostOS::kUnix)
+    {
+      /* Some ZIP archives in Unix use UTF-8 encoding without Utf8 flag in header.
+      We try to get name as UTF-8.
+      Do we need to do it in POSIX version also? */
+      isUtf8 = true;
+    }
+    #endif
+  }
+
+  return isUtf8;
+}
 void CItem::GetUnicodeString(UString &res, const AString &s, bool isComment, bool useSpecifiedCodePage, UINT codePage) const
 {
   bool isUtf8 = IsUtf8();

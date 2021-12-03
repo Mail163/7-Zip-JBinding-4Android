@@ -282,6 +282,7 @@ public:
   Byte GetHostOS() const { return FromCentral ? MadeByVersion.HostOS : ExtractVersion.HostOS; }
 
   void GetUnicodeString(UString &res, const AString &s, bool isComment, bool useSpecifiedCodePage, UINT codePage) const;
+  bool IsUnicodeString(const AString &s, bool isComment, bool useSpecifiedCodePage, UINT codePage) const;
 
   bool IsThereCrc() const
   {

@@ -456,6 +456,12 @@ STDMETHODIMP CHandler::GetProperty(UInt32 index, PROPID propID, PROPVARIANT *val
     case kpidVolumeIndex:
       prop = item.Disk;
       break;
+
+    case kpidCodePage:
+      if (item.IsUnicodeString(item.Name, false, _forceCodePage, _specifiedCodePage)) {
+        prop = "UTF-8";
+      }
+      break;
   }
   
   prop.Detach(value);
@@ -653,7 +659,7 @@ HRESULT CZipDecoder::Decode(
       }
     }
   }
-    
+
   COutStreamWithCRC *outStreamSpec = new COutStreamWithCRC;
   CMyComPtr<ISequentialOutStream> outStream = outStreamSpec;
   outStreamSpec->SetStream(realOutStream);
